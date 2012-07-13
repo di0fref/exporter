@@ -6,7 +6,6 @@
  * @author Fredrik Fahlstad
  * @copyright DRI-Nordic 12 July, 2012
  * */
-
 require_once(__DIR__ . "/ExporterBase.php");
 require_once(__DIR__ . "/ExporterInterface.php");
 
@@ -15,12 +14,14 @@ require_once(__DIR__ . "/ExporterInterface.php");
  *
  * @author: Fredrik Fahlstad
  */
-class csvExporter extends ExporterBase implements ExporterInterface {
+abstract class csvExporter extends ExporterBase implements ExporterInterface {
 
 	/**
 	 *  @var array
 	 */
 	var $data;
+	var $delimiter;
+	var $enclosure;
 
 	public function __construct()
 	{
@@ -28,13 +29,21 @@ class csvExporter extends ExporterBase implements ExporterInterface {
 	}
 
 	/**
-	 * Initiate the export
-	 * @param
+	 * @param string $enclosure
 	 * @return void
 	 */
-	public function export()
+	public function setEnclosure($enclosure)
 	{
-		$this->output();
+		$this->enclosure = $enclosure;
+	}
+
+	/**
+	 * @param string $enclosure
+	 * @return void
+	 */
+	public function setDelimiter($delimiter)
+	{
+		$this->delimiter = $delimiter;
 	}
 
 	/**
@@ -42,11 +51,46 @@ class csvExporter extends ExporterBase implements ExporterInterface {
 	 * @param
 	 * @return void
 	 */
-	public function output()
+	public function output($filename = "")
 	{
-		echo "<pre>";
-		print_r($this);
-		echo "</pre>";
+		if (!$filename) {
+			throw new Exception(__CLASS__."::No file name set.");
+		}
+		ob_clean();
+		header("Pragma: cache");
+		header("Content-type: application/octet-stream; charset=" . $GLOBALS['locale']->getExportCharset());
+		header("Content-Disposition: attachment; filename={$filename}.csv");
+		header("Content-transfer-encoding: binary");
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+		header("Last-Modified: " . TimeDate::httpTime());
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Content-Length: " . mb_strlen($GLOBALS['locale']->translateCharset($this->csv, 'UTF-8', $GLOBALS['locale']->getExportCharset())));
+
+		print $GLOBALS['locale']->translateCharset($this->csv, 'UTF-8', $GLOBALS['locale']->getExportCharset());
+	}
+
+	/**
+	 * @param array $data
+	 * @param array $settings
+	 * @return string CSV
+	 */
+	public function getResult(array $data, array $header)
+	{
+		$csv = "";
+
+		if (!isset($this->delimiter) or !isset($this->enclosure)) {
+			throw new Exception(__CLASS__."::Delimiter and Enclosure needs to be set.");
+		}
+
+		if (isset($header) and is_array($header)) {
+			$csv .= implode($this->delimiter, $header) . "\n";
+		}
+
+		foreach ($data as $line) {
+			$csv .= $this->enclosure . implode($this->enclosure . $this->delimiter . $this->enclosure, $line) . $this->enclosure . "\n";
+		}
+
+		return $csv;
 	}
 
 }
