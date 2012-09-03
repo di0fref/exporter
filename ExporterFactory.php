@@ -1,5 +1,7 @@
 <?php
 require __DIR__."/csvExporter.php";
+require __DIR__."/xmlExporter.php";
+
 /**
  * @example $exporter = ExporterFactory::getExporter(<type>)->export();
  * @param string $type

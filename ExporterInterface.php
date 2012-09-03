@@ -8,8 +8,7 @@
 interface ExporterInterface {
 
 	public function export();
-	public function output($filename);
-	public function getResult(array $data, array $header);
+	public function getResult(array $data, $settings = false);
 }
 
 ?>

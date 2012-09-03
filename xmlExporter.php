@@ -8,13 +8,14 @@
  * */
 require_once(__DIR__ . "/ExporterBase.php");
 require_once(__DIR__ . "/ExporterInterface.php");
+require_once(__DIR__ . "/utils/Array2XML.php");
 
 /**
  * csvExporter
  *
  * @author: Fredrik Fahlstad
  */
-abstract class csvExporter extends ExporterBase implements ExporterInterface {
+abstract class xmlExporter extends ExporterBase implements ExporterInterface {
 
 	/**
 	 *  @var array
@@ -29,24 +30,6 @@ abstract class csvExporter extends ExporterBase implements ExporterInterface {
 	}
 
 	/**
-	 * @param string $enclosure
-	 * @return void
-	 */
-	public function setEnclosure($enclosure)
-	{
-		$this->enclosure = $enclosure;
-	}
-
-	/**
-	 * @param string $enclosure
-	 * @return void
-	 */
-	public function setDelimiter($delimiter)
-	{
-		$this->delimiter = $delimiter;
-	}
-
-	/**
 	 * Outputs the result if the export
 	 * @param
 	 * @return void
@@ -54,12 +37,12 @@ abstract class csvExporter extends ExporterBase implements ExporterInterface {
 	public function output($filename = "")
 	{
 		if (!$filename) {
-			throw new Exception(__CLASS__."::No file name set.");
+			throw new Exception(__CLASS__ . "::No file name set.");
 		}
 		ob_clean();
 		header("Pragma: cache");
 		header("Content-type: application/octet-stream; charset=" . $GLOBALS['locale']->getExportCharset());
-		header("Content-Disposition: attachment; filename={$filename}.csv");
+		header("Content-Disposition: attachment; filename={$filename}.xml");
 		header("Content-transfer-encoding: binary");
 		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 		header("Last-Modified: " . TimeDate::httpTime());
@@ -72,25 +55,15 @@ abstract class csvExporter extends ExporterBase implements ExporterInterface {
 	/**
 	 * @param array $data
 	 * @param array $settings
-	 * @return string CSV
+	 * @return string XML
 	 */
-	public function getResult(array $data, array $header)
+	public function getResult(array $data, $settings)
 	{
-		$csv = "";
-
-		if (!isset($this->delimiter) or !isset($this->enclosure)) {
-			throw new Exception(__CLASS__."::Delimiter and Enclosure needs to be set.");
+		if(!empty($settings['root_node_name'])){
+			throw new Exception(__CLASS__."::No root node name set.");
 		}
-
-		if (isset($header) and is_array($header)) {
-			$csv .= implode($this->delimiter, $header) . "\n";
-		}
-
-		foreach ($data as $line) {
-			$csv .= $this->enclosure . implode($this->enclosure . $this->delimiter . $this->enclosure, $line) . $this->enclosure . "\n";
-		}
-
-		return $csv;
+		$xml = Array2XML::createXML($settings['root_node_name'], $data);
+		return $xml->saveXML();
 	}
 
 }
