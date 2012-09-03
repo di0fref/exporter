@@ -48,7 +48,7 @@ abstract class csvExporter extends ExporterBase implements ExporterInterface {
 
 	/**
 	 * Outputs the result if the export
-	 * @param
+	 * @param string $filename
 	 * @return void
 	 */
 	public function output($filename = "")
@@ -74,7 +74,7 @@ abstract class csvExporter extends ExporterBase implements ExporterInterface {
 	 * @param array $settings
 	 * @return string CSV
 	 */
-	public function getResult(array $data, array $header)
+	public function getResult(array $data, $settings = false)
 	{
 		$csv = "";
 
@@ -82,8 +82,8 @@ abstract class csvExporter extends ExporterBase implements ExporterInterface {
 			throw new Exception(__CLASS__."::Delimiter and Enclosure needs to be set.");
 		}
 
-		if (isset($header) and is_array($header)) {
-			$csv .= implode($this->delimiter, $header) . "\n";
+		if (isset($settings) and is_array($settings)) {
+			$csv .= implode($this->delimiter, $settings) . "\n";
 		}
 
 		foreach ($data as $line) {

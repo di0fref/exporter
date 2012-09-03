@@ -57,7 +57,7 @@ abstract class xmlExporter extends ExporterBase implements ExporterInterface {
 	 * @param array $settings
 	 * @return string XML
 	 */
-	public function getResult(array $data, $settings)
+	public function getResult(array $data, $settings = false)
 	{
 		if(!empty($settings['root_node_name'])){
 			throw new Exception(__CLASS__."::No root node name set.");
